@@ -23,20 +23,19 @@ jobs:
       - name: SSH into VM
         run: |
           ssh -i ~/.ssh/my_gcp_key -o StrictHostKeyChecking=no yashjain200502@35.246.23.173 << 'EOF'
+            set -e
             pwd
             ls -la
             echo "Successfully connected to VM"
-            if [ -d "bit"] then
+            if [ -d "bit" ]; then
               echo "Directory 'bit' already exists. Pulling latest changes."
               cd bit
               git pull origin master
             else
               echo "Directory 'bit' does not exist. Cloning repository."
               git clone https://github.com/yashjain200502/bit.git
+              cd bit
             fi
-            cd bit
-            pip install -r bit/requirements.txt
+            pip install -r requirements.txt
             flask --app app run --host=0.0.0.0 --port=5000
-
-
           EOF
