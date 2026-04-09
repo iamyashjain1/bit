@@ -37,6 +37,14 @@ jobs:
               cd bit
             fi
 
+            if command -v docker >/dev/null 2>&1; then
+              echo "Docker is already installed."
+            else
+              echo "Docker is not installed. Installing Docker."
+              sudo apt-get update
+              sudo apt-get install -y docker.io
+            fi
+
             docker build -t flask-app:latest .
-            docker run -p 5000:5000 flask-app:latest
+            docker run -d -p 5000:5000 flask-app:latest
           EOF
