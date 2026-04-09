@@ -30,6 +30,7 @@ jobs:
             if [ -d "bit" ]; then
               echo "Directory 'bit' already exists. Pulling latest changes."
               cd bit
+              git remote set-url origin https://github.com/Iamyashjain/testing.git
               git pull origin master
             else
               echo "Directory 'bit' does not exist. Cloning repository."
