@@ -22,7 +22,7 @@ jobs:
 
       - name: SSH into VM
         run: |
-          ssh -i ~/.ssh/my_gcp_key -o StrictHostKeyChecking=no yashjain200502@35.246.23.173 << 'EOF'
+          ssh -i ~/.ssh/my_gcp_key -o StrictHostKeyChecking=no yashjain200502@34.39.50.9 << 'EOF'
             set -e
             pwd
             ls -la
