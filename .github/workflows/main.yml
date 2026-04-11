@@ -1,5 +1,4 @@
-name: Deploy to VM
-
+# name: Deploy to VM
 on:
   push:
     branches:
@@ -20,34 +19,77 @@ jobs:
           chmod 600 my_gcp_key
           ls -ltr
 
+      - name: login into dockerhub
+        run: |
+          echo "${{secrets.DOCKER_PASSWORD}}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker file
+        run: |
+          docker build -t ${{secrets.DOCKER_USERNAME}}/flask-app:latest .
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{secrets.DOCKER_USERNAME}}/flask-app:latest
+
       - name: SSH into VM
         run: |
           ssh -i ~/.ssh/my_gcp_key -o StrictHostKeyChecking=no yashjain200502@34.39.50.9 << 'EOF'
-            set -e
-            pwd
-            ls -la
-            echo "Successfully connected to VM"
-            if [ -d "bit" ]; then
-              echo "Directory 'bit' already exists. Pulling latest changes."
-              cd bit
-              git remote set-url origin https://github.com/iamyashjain1/bit
-              git pull origin master
-            else
-              echo "Directory 'bit' does not exist. Cloning repository."
-              git clone https://github.com/yashjain200502/bit.git
-              cd bit
-            fi
-
-            if command -v docker >/dev/null 2>&1; then
-              echo "Docker is already installed."
-            else
-              echo "Docker is not installed. Installing Docker."
-              sudo apt-get update
-              sudo apt-get install -y docker.io
-            fi
-
-            docker build -t flask-app:latest .
+            docker pull ${{secrets.DOCKER_USERNAME}}/flask-app:latest
             docker stop flask-app || true
             docker rm flask-app || true
-            docker run -d --name flask-app -p 5000:5000 flask-app:latest
+            docker run -d --name flask-app -p 5000:5000 ${{secrets.DOCKER_USERNAME}}/flask-app:latest
+
           EOF
+
+# on:
+#   push:
+#     branches:
+#       - master
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: copy ssh into machine
+#         run: |
+#           mkdir -p ~/.ssh
+#           cd ~/.ssh
+#           echo "${{ secrets.my_gcp_key }}" > my_gcp_key
+#           chmod 600 my_gcp_key
+#           ls -ltr
+
+#       - name: SSH into VM
+#         run: |
+#           ssh -i ~/.ssh/my_gcp_key -o StrictHostKeyChecking=no yashjain200502@34.39.50.9 << 'EOF'
+#             set -e
+#             pwd
+#             ls -la
+#             echo "Successfully connected to VM"
+#             if [ -d "bit" ]; then
+#               echo "Directory 'bit' already exists. Pulling latest changes."
+#               cd bit
+#               git remote set-url origin https://github.com/iamyashjain1/bit
+#               git pull origin master
+#             else
+#               echo "Directory 'bit' does not exist. Cloning repository."
+#               git clone https://github.com/yashjain200502/bit.git
+#               cd bit
+#             fi
+
+#             if command -v docker >/dev/null 2>&1; then
+#               echo "Docker is already installed."
+#             else
+#               echo "Docker is not installed. Installing Docker."
+#               sudo apt-get update
+#               sudo apt-get install -y docker.io
+#             fi
+
+#             docker build -t flask-app:latest .
+#             docker stop flask-app || true
+#             docker rm flask-app || true
+#             docker run -d --name flask-app -p 5000:5000 flask-app:latest
+#           EOF
+
