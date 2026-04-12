@@ -7,6 +7,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,17 +29,17 @@ jobs:
         run: |
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
-      - name: Build Docker file
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      - name: Build Docker image
         run: |
-          docker build -t $DOCKER_USERNAME/flask-app:latest .
+          if [ -z "$DOCKER_USERNAME" ]; then
+            echo "DOCKER_USERNAME secret is missing or empty"
+            exit 1
+          fi
+          docker build -t "$DOCKER_USERNAME"/flask-app:latest .
 
       - name: Push Docker image to Docker Hub
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          docker push $DOCKER_USERNAME/flask-app:latest
+          docker push "$DOCKER_USERNAME"/flask-app:latest
 
       - name: SSH into VM
         run: |
