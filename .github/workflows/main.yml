@@ -27,12 +27,16 @@ jobs:
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
       - name: Build Docker file
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          docker build -t ${{secrets.DOCKER_USERNAME}}/flask-app:latest .
+          docker build -t $DOCKER_USERNAME/flask-app:latest .
 
       - name: Push Docker image to Docker Hub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          docker push ${{secrets.DOCKER_USERNAME}}/flask-app:latest
+          docker push $DOCKER_USERNAME/flask-app:latest
 
       - name: SSH into VM
         run: |
